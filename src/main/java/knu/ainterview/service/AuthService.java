@@ -1,9 +1,6 @@
 package knu.ainterview.service;
 
-import knu.ainterview.controller.dto.MemberRequestDto;
-import knu.ainterview.controller.dto.MemberResponseDto;
-import knu.ainterview.controller.dto.TokenDto;
-import knu.ainterview.controller.dto.TokenRequestDto;
+import knu.ainterview.controller.dto.*;
 import knu.ainterview.entity.Member;
 import knu.ainterview.entity.RefreshToken;
 import knu.ainterview.jwt.TokenProvider;
@@ -27,19 +24,19 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
-        if (memberRepository.existsByEmail(memberRequestDto.getEmail())) {
+    public MemberResponseDto signup(MemberSignUpDto memberSignUpDto) {
+        if (memberRepository.existsByEmail(memberSignUpDto.getEmail())) {
             throw new RuntimeException("이미 가입되어 있는 유저입니다");
         }
 
-        Member member = memberRequestDto.toMember(passwordEncoder);
+        Member member = memberSignUpDto.toMember(passwordEncoder);
         return MemberResponseDto.of(memberRepository.save(member));
     }
 
     @Transactional
-    public TokenDto login(MemberRequestDto memberRequestDto) {
+    public TokenDto login(MemberLoginDto memberLoginDto) {
         // 1. Login ID/PW 를 기반으로 AuthenticationToken 생성
-        UsernamePasswordAuthenticationToken authenticationToken = memberRequestDto.toAuthentication();
+        UsernamePasswordAuthenticationToken authenticationToken = memberLoginDto.toAuthentication();
 
         // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
         //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
