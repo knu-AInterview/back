@@ -4,6 +4,8 @@ import knu.ainterview.entity.Resume;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 public class ResumeDto {
@@ -12,14 +14,16 @@ public class ResumeDto {
 
     private String title;
 
-    private String job;
+    private List<String> career;
 
-    private Integer career;
+    private List<String> award;
+
+    private String language;
 
     private String introduction;
 
 
     public static ResumeDto of(Resume resume) {
-        return new ResumeDto(resume.getResumeId(), resume.getTitle(), resume.getJob(), resume.getCareer(), resume.getIntroduction());
+        return new ResumeDto(resume.getResumeId(), resume.getTitle(), resume.getCareer(), resume.getAward(), resume.getLanguage(), resume.getIntroduction());
     }
 }

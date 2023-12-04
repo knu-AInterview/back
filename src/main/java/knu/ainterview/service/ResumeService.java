@@ -1,6 +1,7 @@
 package knu.ainterview.service;
 
 import knu.ainterview.controller.dto.ResumeDto;
+import knu.ainterview.controller.dto.ResumeTitleDto;
 import knu.ainterview.entity.Resume;
 import knu.ainterview.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,9 @@ public class ResumeService {
     public ResumeDto registerResume(ResumeDto resumeDto, Long memberId) {
         Resume resume = Resume.builder()
                 .title(resumeDto.getTitle())
-                .job(resumeDto.getJob())
                 .career(resumeDto.getCareer())
+                .award(resumeDto.getAward())
+                .language(resumeDto.getLanguage())
                 .introduction(resumeDto.getIntroduction())
                 .memberId(memberId)
                 .build();
@@ -34,10 +36,10 @@ public class ResumeService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> findAllTitlesByMemberId(Long memberId) {
+    public List<ResumeTitleDto> findAllTitlesByMemberId(Long memberId) {
         return resumeRepository.findAllByMemberId(memberId)
                 .stream()
-                .map(Resume::getTitle)
+                .map(resume -> new ResumeTitleDto(resume.getResumeId(), resume.getTitle()))
                 .collect(Collectors.toList());
     }
 
@@ -50,7 +52,7 @@ public class ResumeService {
     public ResumeDto update(Long resumeId, ResumeDto newResume) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이력서가 존재하지 않습니다."));
-        resume.update(newResume.getTitle(), newResume.getJob(), newResume.getCareer(), newResume.getIntroduction());
+        resume.update(newResume.getResumeId(), newResume.getTitle(), newResume.getCareer(), newResume.getAward(), newResume.getLanguage(), newResume.getIntroduction());
         return ResumeDto.of(resumeRepository.save(resume));
     }
 

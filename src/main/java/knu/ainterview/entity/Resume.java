@@ -1,10 +1,14 @@
 package knu.ainterview.entity;
 
+import knu.ainterview.util.StringListConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -20,11 +24,14 @@ public class Resume {
 
     private String title;
 
-    private String job;
+    @Convert(converter = StringListConverter.class)
+    private List<String> career = new ArrayList<>();
 
-    private Integer career;
+    @Convert(converter = StringListConverter.class)
+    private List<String> award = new ArrayList<>();
 
-    @Column(length = 500)
+    private String language;
+
     private String introduction;
 
     @ManyToOne(targetEntity = Member.class, fetch = FetchType.LAZY)
@@ -34,10 +41,12 @@ public class Resume {
     @Column(name = "member_id")
     private Long memberId;
 
-    public void update(String title, String job, Integer career, String introduction) {
+    public void update(Long resumeId, String title, List<String> career, List<String> award, String language, String introduction) {
+        this.resumeId = resumeId;
         this.title = title;
-        this.job = job;
         this.career = career;
+        this.award = award;
+        this.language = language;
         this.introduction = introduction;
     }
 }
