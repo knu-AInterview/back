@@ -1,8 +1,7 @@
 package knu.ainterview.controller;
 
-import knu.ainterview.controller.dto.MemberResponseDto;
-import knu.ainterview.controller.dto.ResumeDto;
-import knu.ainterview.controller.dto.ResumeTitleDto;
+import knu.ainterview.controller.dto.*;
+import knu.ainterview.service.InterviewService;
 import knu.ainterview.service.MemberService;
 import knu.ainterview.service.ResumeService;
 import knu.ainterview.util.SecurityUtil;
@@ -18,6 +17,8 @@ import java.util.List;
 public class MemberController {
     private final MemberService memberService;
     private final ResumeService resumeService;
+
+    private final InterviewService interviewService;
 
 
     @GetMapping("/me")
@@ -54,5 +55,15 @@ public class MemberController {
     public ResponseEntity<Void> deleteResume(@PathVariable Long resumeId) {
         resumeService.delete(resumeId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/interview/list")
+    public ResponseEntity<List<InterviewTitleDto>> findInterviewTitlesByMemberId() {
+        return ResponseEntity.ok(interviewService.findAllTitlesByMemberId(SecurityUtil.getCurrentMemberId()));
+    }
+
+    @GetMapping("/interview/{interviewId}")
+    public ResponseEntity<InterviewResponseDto> findInterviewById(@PathVariable Long interviewId) {
+        return ResponseEntity.ok(interviewService.findById(interviewId));
     }
 }
