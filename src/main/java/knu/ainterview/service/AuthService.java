@@ -7,12 +7,16 @@ import knu.ainterview.jwt.TokenProvider;
 import knu.ainterview.repository.MemberRepository;
 import knu.ainterview.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto login(MemberLoginDto memberLoginDto) {
+    public NicknameDto login(MemberLoginDto memberLoginDto, HttpServletResponse response) {
         // 1. Login ID/PW 를 기반으로 AuthenticationToken 생성
         UsernamePasswordAuthenticationToken authenticationToken = memberLoginDto.toAuthentication();
 
@@ -53,8 +57,28 @@ public class AuthService {
 
         refreshTokenRepository.save(refreshToken);
 
-        // 5. 토큰 발급
-        return tokenDto;
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
+                // 토큰의 유효 기간
+                .maxAge(24 * 60 * 60)
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(true)
+                .build();
+        response.setHeader("Set-Cookie", refreshCookie.toString());
+
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
+                .maxAge( 30 * 60)
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(false)
+                .build();
+        response.setHeader("Set-Cookie", accessCookie.toString());
+
+        return memberRepository.findByEmail(memberLoginDto.getEmail())
+                .map(NicknameDto::of)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email : " + memberLoginDto.getEmail()));
     }
 
     @Transactional
