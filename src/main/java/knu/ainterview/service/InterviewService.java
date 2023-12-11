@@ -7,8 +7,14 @@ import knu.ainterview.repository.InterviewRepository;
 import knu.ainterview.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,11 +30,7 @@ public class InterviewService {
 
     @Transactional
     public QnAResponseDto registerInterview(InterviewRequestDto interviewRequestDto, Long memberId) {
-
-        //todo 리스트 대신 서버 통신
-
-        Resume resume = resumeRepository.findById(interviewRequestDto.getResumeDto().getResumeId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid resumeId"));
+//        List<QnA> qnaList = getQnAListFromAIServer(interviewRequestDto);
 
         List<QnA> qnaList = Arrays.asList(
                 new QnA("1", "6"),
@@ -37,6 +39,10 @@ public class InterviewService {
                 new QnA("4", "9"),
                 new QnA("5", "10")
         );
+
+        Resume resume = resumeRepository.findById(interviewRequestDto.getResumeDto().getResumeId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid resumeId"));
+
         Interview interview = Interview.builder()
                 .title(interviewRequestDto.getTitle())
                 .job(interviewRequestDto.getJob())
@@ -60,5 +66,21 @@ public class InterviewService {
         return interviewRepository.findById(interviewId)
                 .map(InterviewResponseDto::of)
                 .orElseThrow(() -> new IllegalArgumentException("해당 인터뷰가 존재하지 않습니다."));
+    }
+
+    public List<QnA> getQnAListFromAIServer(InterviewRequestDto interviewRequestDto){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-Type", "application/json");
+
+        HttpEntity<InterviewRequestDto> request = new HttpEntity<>(interviewRequestDto, httpHeaders);
+        ResponseEntity<List<QnA>> response = restTemplate.exchange(
+                "http://localhost:8000/api",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<List<QnA>>() {}
+        );
+
+        return response.getBody();
     }
 }
