@@ -29,6 +29,7 @@ public class Interview {
     private String requirement;
 
     @Convert(converter = QnAListConverter.class)
+    @Column(columnDefinition = "TEXT")
     private List<QnA> qnaList = new ArrayList<>();
 
     @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)

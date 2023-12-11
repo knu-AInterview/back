@@ -32,6 +32,7 @@ public class Resume {
 
     private String language;
 
+    @Column(columnDefinition = "TEXT")
     private String introduction;
 
     @ManyToOne(targetEntity = Member.class, fetch = FetchType.LAZY)
