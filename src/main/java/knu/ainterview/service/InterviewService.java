@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,17 +27,12 @@ public class InterviewService {
     private final InterviewRepository interviewRepository;
     private final ResumeRepository resumeRepository;
 
+    private static String GPT_API = "http://155.230.36.16:8700/question_ask";
+    private static String TRAINING_MODEL = "http://155.230.36.16:8500/question_ask";
+
     @Transactional
     public QnAResponseDto registerInterview(InterviewRequestDto interviewRequestDto, Long memberId) {
-//        List<QnA> qnaList = getQnAListFromAIServer(interviewRequestDto);
-
-        List<QnA> qnaList = Arrays.asList(
-                new QnA("1", "6"),
-                new QnA("2", "7"),
-                new QnA("3", "8"),
-                new QnA("4", "9"),
-                new QnA("5", "10")
-        );
+        List<QnA> qnaList = getQnAListFromAIServer(interviewRequestDto);
 
         Resume resume = resumeRepository.findById(interviewRequestDto.getResumeDto().getResumeId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid resumeId"));
@@ -75,7 +69,7 @@ public class InterviewService {
 
         HttpEntity<InterviewRequestDto> request = new HttpEntity<>(interviewRequestDto, httpHeaders);
         ResponseEntity<List<QnA>> response = restTemplate.exchange(
-                "http://localhost:8000/api",
+                GPT_API,
                 HttpMethod.POST,
                 request,
                 new ParameterizedTypeReference<List<QnA>>() {}
